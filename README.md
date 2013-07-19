@@ -18,7 +18,6 @@ A Redis implementation of the com.tombooth/friend-token TokenStore protocol.
             [cemerick.friend :as friend]
             (cemerick.friend [credentials :as creds])
             [tombooth.friend-token :as friend-token]
-            [tombooth.friend-token.token-store :as store]
             [tombooth.friend-token.redis :as redis-store]))
 
 (def users {"friend" {:username "friend"
