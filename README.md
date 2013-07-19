@@ -17,42 +17,40 @@ A Redis implementation of the com.tombooth/friend-token TokenStore protocol.
             [compojure.route :as route]
             [cemerick.friend :as friend]
             (cemerick.friend [credentials :as creds])
-            [tombooth.friend-token.workflow :as token-workflow]
+            [tombooth.friend-token :as friend-token]
             [tombooth.friend-token.token-store :as store]
-            [tombooth.friend-token.token :as token]
             [tombooth.friend-token.redis :as redis-store]))
 
 (def users {"friend" {:username "friend"
                       :password (creds/hash-bcrypt "clojure")
                       :roles #{::user}}})
 
-(defonce secret-key (token/generate-key))
+(defonce secret-key (friend-token/generate-key))
 
-(def token-header "X-Auth-Token")
 (def token-store
   (redis-store/->RedisTokenStore secret-key 30 {:pool {} :spec {:host "127.0.0.1" :port 6379}}))
 
 (defroutes app-routes
   (GET "/" [] (friend/authenticated "Authenticated Hello!!"))
   (GET "/un" [] "Unauthenticated Hello")
-  (POST "/extend-token" [:as request]
-    (if-let [token-hex (token/from-request request token-header)]
-      (do (store/extend-life token-store token-hex) {:status 200})
-      {:status 401}))
-  (POST "/destroy-token" [:as request]
-    (if-let [token-hex (token/from-request request token-header)]
-      (do (store/destroy token-store token-hex) {:status 200})
-      {:status 401}))
+  (POST "/extend-token" []
+    (friend/authenticated
+      (friend-token/extend-life
+        {:status 200 :headers {}})))
+  (POST "/destroy-token" []
+    (friend/authenticated
+      (friend-token/destroy
+        {:status 200 :headers {}})))
   (route/resources "/")
   (route/not-found "Not Found"))
 
 (def secured-app (friend/authenticate
                    app-routes
                    {:allow-anon? true
-                    :unauthenticated-handler #(token-workflow/token-deny %)
+                    :unauthenticated-handler #(friend-token/workflow-deny %)
                     :login-uri "/authenticate"
-                    :workflows [(token-workflow/token
-                                  :token-header token-header
+                    :workflows [(friend-token/workflow
+                                  :token-header "X-Auth-Token"
                                   :credential-fn (partial creds/bcrypt-credential-fn users)
                                   :token-store token-store
                                   :get-user-fn users )]}))
