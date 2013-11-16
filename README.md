@@ -5,7 +5,7 @@ A Redis implementation of the com.tombooth/friend-token TokenStore protocol.
 ## Usage
 
 ```clojure
-[com.tombooth/friend-token-redis "0.1.0-SNAPSHOT"]
+[com.tombooth/friend-token-redis "0.1.1-SNAPSHOT"]
 ```
 
 ## Example
@@ -16,7 +16,7 @@ A Redis implementation of the com.tombooth/friend-token TokenStore protocol.
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [cemerick.friend :as friend]
-            (cemerick.friend [credentials :as creds])
+            [cemerick.friend [credentials :as creds]]
             [tombooth.friend-token :as friend-token]
             [tombooth.friend-token.redis :as redis-store]))
 
