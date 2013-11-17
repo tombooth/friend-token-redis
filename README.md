@@ -27,7 +27,11 @@ A Redis implementation of the com.tombooth/friend-token TokenStore protocol.
 (defonce secret-key (friend-token/generate-key))
 
 (def token-store
-  (redis-store/->RedisTokenStore secret-key 30 {:pool {} :spec {:host "127.0.0.1" :port 6379}}))
+  (redis-store/->RedisTokenStore secret-key                  ;; Key used to sign tokens
+                                 30                          ;; TTL measured in seconds
+                                 { :pool {}                  ;; Redis config
+                                   :spec { :host "127.0.0.1" 
+                                           :port 6379 }}))
 
 (defroutes app-routes
   (GET "/" [] (friend/authenticated "Authenticated Hello!!"))
